@@ -1,0 +1,15 @@
+@import "./reset.css";
+
+:root {
+  --main-bg-color: #000;
+  --second-bg-color: #003300;
+  --main-fg-color: #00ff00;
+}
+
+body {
+  background: var(--main-bg-color);
+  color: var(--main-fg-color);
+  font-family: 'Fixedsys Excelsior', Courier, monospace;
+  margin: 0;
+}
+
