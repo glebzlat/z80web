@@ -1,67 +1,89 @@
 <template>
   <main class="main">
     <div class="wrapper">
-      <div class="window code-window">
-        <div class="window-header">
-          <p class="window-header-text">Code</p>
-        </div>
-        <div class="window-contents">
-          <CodeEditor />
-        </div>
-      </div>
-      <div class="window mem-window">
-        <div class="window-header">
-          <p class="window-header-text">Memory</p>
-        </div>
-        <div class="window-contents">
+      <Window class="code-window" header="Code">
+        <template #main>
+          <CodeEditor v-model="sourceCode" />
+        </template>
+        <template #bottom-panel>
+          <Button @click="onAssemble" :active="resourcesLoaded">
+            Assemble
+          </Button>
+        </template>
+      </Window>
+      <Window class="mem-window" header="Mem">
+        <template #main>
           <MemoryView :memory="memoryContents" />
-        </div>
-      </div>
-      <div class="window cpu-window">
-        <div class="window-header">
-          <p class="window-header-text">CPU</p>
-        </div>
-        <div class="window-contents"></div>
-      </div>
+        </template>
+      </Window>
+      <Window class="cpu-window" header="CPU">
+        <template #main>
+          <div>Nothing yet</div>
+        </template>
+      </Window>
     </div>
   </main>
 </template>
 
 <script setup>
-  import { useTemplateRef, ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted } from 'vue';
+
+  import Window from './components/Window.vue';
+  import Button from './components/Button.vue';
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
 
   import { Assembler } from "./assembler.js";
 
   const asm = new Assembler(__Z80ASM_FILE__, __SCRIPT_FILE__);
+  const sourceCode = ref("");
 
-  /* Mock source code */
-  const source = `
-    .db 0x10, 0x20, 0x30
-        nop
-    .db 'a', 'b', 'c', 0b00101010
-        nop
-    .db "hello", 0x2A
-        nop
-        halt
-  `;
+  const resourcesLoaded = ref(false);
+  const program = ref([]);
 
-  /* Mock data */
-  const memoryContents = [
-    {fold: false, blocks: [{addr: 0x0000, bytes: [0x10, 0x20, 0x30]}]},
-    {fold: true, blocks: [
-      {addr: 0x0003, bytes: [0x10, 0x20, 0x30, 0x40]},
-      {addr: 0x0007, bytes: [0x50, 0x60, 0x70, 0x80]},
-      {addr: 0x000b, bytes: [0x90, 0xa0, 0xb0, 0xc0]}
-    ]},
-    {fold: false, blocks: [{addr: 0x000f, bytes: [0x2c]}]}
-  ];
+  const memoryContents = computed(() => {
+    const blocks = [];
+
+    let address = 0;
+    for (let block of program.value) {
+      if (block.bytes === null) {
+        continue;
+      }
+
+      const rows = [], bytes = [];
+      let prevAddress = address;
+
+      for (let b of block.bytes) {
+        bytes.push(b);
+        ++address;
+        if (bytes.length == 4) {
+          rows.push({ addr: prevAddress, bytes: [...bytes] });
+          prevAddress = address;
+          bytes.length = 0;
+        }
+      }
+
+      if (bytes.length) {
+        rows.push({ addr: prevAddress, bytes });
+      }
+
+      blocks.push({
+        line: block.line,
+        lineNo: block.lineNo,
+        rows: rows
+      });
+    }
+
+    return blocks;
+  });
+
+  async function onAssemble() {
+    program.value = await Array.fromAsync(asm.assemble(sourceCode.value));
+  }
 
   onMounted(async () => {
     await asm.init();
-    const arr = await Array.fromAsync(asm.assemble(source));
-    console.log(arr);
+    resourcesLoaded.value = true;
   });
 </script>
 
@@ -80,14 +102,6 @@
   ;
   height: 100%;
 }
-
-.window {
-  display: flex;
-  flex-direction: column;
-  margin: 5px;
-  border: solid 1px var(--main-fg-color);
-}
-
 .code-window {
   grid-area: code-window;
 }
@@ -98,16 +112,5 @@
 
 .cpu-window {
   grid-area: cpu-window;
-}
-
-.window-header {
-  padding: 2px 6px;
-  background-color: var(--second-bg-color);
-  user-select: none;
-}
-
-.window-contents {
-  flex-grow: 1;
-  padding: 2px 6px;
 }
 </style>

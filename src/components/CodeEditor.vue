@@ -1,43 +1,46 @@
 <template>
   <div class="code-editor">
-    <div class="code-lines" ref="code-lines">
-      <div class="code-line"
-           v-for="lineNo of codeLineNumbers">
-        {{ lineNo }}
+    <div class="code-input">
+      <div class="code-lines" ref="code-lines">
+        <div class="code-line"
+             v-for="lineNo of codeLineNumbers">
+          {{ lineNo }}
+        </div>
       </div>
+      <textarea name="code-input"
+                id="code-input"
+                class="code-input"
+                ref="code-input"
+                :value="modelValue"
+                @input="onCodeAreaInput"
+                @scroll="onCodeAreaScroll"
+                placeholder="; input code here"
+                spellcheck="false"
+                wrap="soft">
+      </textarea>
     </div>
-    <textarea name="code-input"
-              id="code-input"
-              class="code-input"
-              ref="code-input"
-              :value="codeValue"
-              @input="onCodeAreaInput"
-              @scroll="onCodeAreaScroll"
-              placeholder="; input code here"
-              spellcheck="false"
-              wrap="soft">
-    </textarea>
   </div>
 </template>
 
 <script setup>
   import { useTemplateRef, ref, computed, onMounted } from 'vue';
 
+  const modelValue = defineModel({ type: String, default: "" });
+
   const codeLinesEl = useTemplateRef("code-lines");
   const codeAreaEl = useTemplateRef("code-input")
 
-  const codeValue = ref("");
+  const emit = defineEmits(["assemble"]);
 
   const codeLineNumbers = computed(() => {
-    return codeValue.value.split("\n").length
+    return modelValue.value.split("\n").length
   });
 
   function onCodeAreaInput(event) {
-    codeValue.value = event.target.value;
+    modelValue.value = event.target.value;
   }
 
-  function onCodeAreaScroll(event) {
-    console.log("scroll", event)
+  function onCodeAreaScroll() {
     codeLinesEl.value.scrollTop = codeAreaEl.value.scrollTop;
   }
 
@@ -49,10 +52,16 @@
 <style scoped>
 .code-editor {
   display: flex;
-  gap: 5px;
+  flex-direction: column;
   height: 100%;
   font-size: 0.8rem;
+}
+
+.code-input {
+  flex-grow: 1;
+  display: flex;
   overflow-y: auto;
+  gap: 5px;
 }
 
 .code-lines {
