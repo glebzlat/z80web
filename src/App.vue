@@ -42,13 +42,10 @@
       response = await pyfetch("${__Z80ASM_FILE__}")
       with open("z80asm.py", "wb") as fout:
           fout.write(await response.bytes())
-      with open("z80asm.py", "r") as fin:
-          s = fin.read(500)
-          print(s)
     `)
   }
 
-  await helloPython();
+  helloPython();
 
   /* Mock data */
   const memoryContents = [
