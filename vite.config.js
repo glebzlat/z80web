@@ -14,7 +14,8 @@ export default defineConfig({
     vueDevTools()
   ],
   define: {
-    __Z80ASM_FILE__: JSON.stringify("deps/z80asm/z80asm.py")
+    __Z80ASM_FILE__: JSON.stringify("deps/z80asm/z80asm.py"),
+    __SCRIPT_FILE__: JSON.stringify("src/assets/script.py")
   },
   resolve: {
     alias: {

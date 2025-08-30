@@ -32,20 +32,20 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
 
-  import { loadPyodide } from "pyodide";
+  import { Assembler } from "./assembler.js";
 
-  async function helloPython() {
-    let pyodide = await loadPyodide();
-    pyodide.setDebug(true);
-    await pyodide.runPythonAsync(`
-      from pyodide.http import pyfetch
-      response = await pyfetch("${__Z80ASM_FILE__}")
-      with open("z80asm.py", "wb") as fout:
-          fout.write(await response.bytes())
-    `)
-  }
+  const asm = new Assembler(__Z80ASM_FILE__, __SCRIPT_FILE__);
 
-  helloPython();
+  /* Mock source code */
+  const source = `
+    .db 0x10, 0x20, 0x30
+        nop
+    .db 'a', 'b', 'c', 0b00101010
+        nop
+    .db "hello", 0x2A
+        nop
+        halt
+  `;
 
   /* Mock data */
   const memoryContents = [
@@ -58,6 +58,11 @@
     {fold: false, blocks: [{addr: 0x000f, bytes: [0x2c]}]}
   ];
 
+  onMounted(async () => {
+    await asm.init();
+    const arr = await Array.fromAsync(asm.assemble(source));
+    console.log(arr);
+  });
 </script>
 
 <style scoped>
