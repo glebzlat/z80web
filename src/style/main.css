@@ -11,5 +11,6 @@ body {
   color: var(--main-fg-color);
   font-family: 'Fixedsys Excelsior', Courier, monospace;
   margin: 0;
+  scrollbar-color: var(--main-fg-color) var(--second-bg-color);
 }
 
