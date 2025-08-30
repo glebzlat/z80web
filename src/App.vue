@@ -32,6 +32,24 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
 
+  import { loadPyodide } from "pyodide";
+
+  async function helloPython() {
+    let pyodide = await loadPyodide();
+    pyodide.setDebug(true);
+    await pyodide.runPythonAsync(`
+      from pyodide.http import pyfetch
+      response = await pyfetch("${__Z80ASM_FILE__}")
+      with open("z80asm.py", "wb") as fout:
+          fout.write(await response.bytes())
+      with open("z80asm.py", "r") as fin:
+          s = fin.read(500)
+          print(s)
+    `)
+  }
+
+  await helloPython();
+
   /* Mock data */
   const memoryContents = [
     {fold: false, blocks: [{addr: 0x0000, bytes: [0x10, 0x20, 0x30]}]},

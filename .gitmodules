@@ -1,0 +1,3 @@
+[submodule "deps/z80asm"]
+	path = deps/z80asm
+	url = https://github.com/glebzlat/z80asm.git

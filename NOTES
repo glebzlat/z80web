@@ -1,0 +1,33 @@
+How everything will be wired up together:
+
+- Fetch z80asm Python module
+- User clicks "Assemble":
+  - Arm the assembler
+  - Feed it the code
+  - Output format: list[tuple[int, str, list[int]]],
+    where the first int is a line number, str is a source line,
+    and a list of ints is bytes of an instruction
+- Transform the output data to the format accepted by MemoryView
+- Display the memory
+- Allow the user to start the CPU
+
+What is needed:
+
+- Glue logic between the assembler and the program
+- Add the emulator repo to the project and figure out how to build and
+  integrate it.
+
+Miscellaneous:
+
+- How to intercept Python exceptions?
+- How to display assembler errors to the user?
+
+- I think I don't like current implementation of block folds in MemoryView.
+  It should be implemented like this: by default, all blocks are open.
+  Blocks are highlighted on hover (blocks, not individual rows).
+  On click, if the block has more than one row, the block is collapsed.
+  Collapsed blocks are marked with an ellipsis:
+
+    0eaa  10 20 30
+    0ead  01 2c 5a 00  ...
+    0eXX  40 50 60 70
