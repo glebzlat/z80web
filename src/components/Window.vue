@@ -28,6 +28,7 @@
 .window {
   display: flex;
   flex-direction: column;
+  min-height: 0;
   margin: 5px;
   border: solid 1px var(--main-fg-color);
 }
@@ -40,6 +41,8 @@
 
 .window-main {
   flex-grow: 1;
+  min-height: 0;
+  overflow: auto;
   padding: 2px 6px;
 }
 
