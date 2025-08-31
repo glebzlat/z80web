@@ -13,7 +13,7 @@
       </Window>
       <Window class="mem-window" header="Mem">
         <template #main>
-          <MemoryView :memory="memoryContents" />
+          <MemoryView :memory="memoryContents" :loaded="memoryLoaded" />
         </template>
       </Window>
       <Window class="cpu-window" header="CPU">
@@ -39,6 +39,7 @@
   const sourceCode = ref("");
 
   const resourcesLoaded = ref(false);
+  const memoryLoaded = ref(false);
   const program = ref([]);
 
   const memoryContents = computed(() => {
@@ -78,11 +79,15 @@
   });
 
   async function onAssemble() {
-    program.value = await Array.fromAsync(asm.assemble(sourceCode.value));
+    memoryLoaded.value = false;
+    program.value = await asm.assemble(sourceCode.value);
+    memoryLoaded.value = true;
   }
 
   onMounted(async () => {
     await asm.init();
+    program.value = asm.getBlank();
+    memoryLoaded.value = true;
     resourcesLoaded.value = true;
   });
 </script>

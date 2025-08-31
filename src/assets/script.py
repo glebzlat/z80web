@@ -11,6 +11,12 @@ from z80asm import (
 )
 
 
+def get_end_addr(stmt: Instruction | Directive) -> int:
+    if isinstance(stmt, Directive) and stmt.kind == DirectiveKind.org:
+        return stmt.addr
+    return stmt.addr + len(stmt.encoded)
+
+
 def get_encoded(stmt: Instruction | Directive) -> list[bytes]:
     if isinstance(stmt, Directive):
         if stmt.kind == DirectiveKind.org:
@@ -25,4 +31,9 @@ def assemble() -> list[tuple[int, str, tuple[int, ...]]]:
 
     for stmt in program:
         if isinstance(stmt, (Instruction, Directive)):
-            print(json.dumps([stmt.lineno, stmt.line, get_encoded(stmt)]))
+            print(json.dumps([
+                stmt.lineno,
+                stmt.line,
+                get_end_addr(stmt),
+                get_encoded(stmt)
+            ]))
