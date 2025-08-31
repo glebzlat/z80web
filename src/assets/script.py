@@ -6,8 +6,16 @@ from z80asm import (
     Z80AsmCompiler,
     Z80AsmLayouter,
     Instruction,
-    Directive
+    Directive,
+    DirectiveKind
 )
+
+
+def get_encoded(stmt: Instruction | Directive) -> list[bytes]:
+    if isinstance(stmt, Directive):
+        if stmt.kind == DirectiveKind.org:
+            return [0x00] * (stmt.addr - stmt.length)
+    return stmt.encoded
 
 
 def assemble() -> list[tuple[int, str, tuple[int, ...]]]:
@@ -17,4 +25,4 @@ def assemble() -> list[tuple[int, str, tuple[int, ...]]]:
 
     for stmt in program:
         if isinstance(stmt, (Instruction, Directive)):
-            print(json.dumps([stmt.lineno, stmt.line, stmt.encoded]))
+            print(json.dumps([stmt.lineno, stmt.line, get_encoded(stmt)]))
