@@ -13,7 +13,8 @@
       </Window>
       <Window class="mem-window" header="Mem">
         <template #main>
-          <MemoryView :memory="memoryContents" :loaded="memoryLoaded" />
+          <MemoryView :memory="memoryContents" :loaded="memoryLoaded"
+                      :errors="assemblyErrors" />
         </template>
       </Window>
       <Window class="cpu-window" header="CPU">
@@ -33,7 +34,7 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
 
-  import { Assembler } from "./assembler.js";
+  import { Assembler, AssemblingError } from "./assembler.js";
 
   const asm = new Assembler(__Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
@@ -41,6 +42,7 @@
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
   const program = ref([]);
+  const assemblyErrors = ref([]);
 
   const memoryContents = computed(() => {
     const blocks = [];
@@ -80,8 +82,15 @@
 
   async function onAssemble() {
     memoryLoaded.value = false;
-    program.value = await asm.assemble(sourceCode.value);
-    memoryLoaded.value = true;
+    assemblyErrors.value.length = 0;
+    try {
+      program.value = await asm.assemble(sourceCode.value);
+      memoryLoaded.value = true;
+    } catch (e) {
+      if (e instanceof AssemblingError) {
+        assemblyErrors.value.push(e);
+      }
+    }
   }
 
   onMounted(async () => {

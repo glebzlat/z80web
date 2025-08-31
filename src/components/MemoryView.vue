@@ -1,6 +1,14 @@
 <template>
   <div class="memory-contents">
-    <div v-if="props.loaded">
+    <div v-if="props.errors && props.errors.length" class="error-display">
+      <p class="error-message">
+        Program cannot be assembled due to following errors:
+      </p>
+      <p v-for="error in props.errors" class="error-message">
+        <pre>{{ error.message }}</pre>
+      </p>
+    </div>
+    <div v-else-if="props.loaded">
       <div class="memory-block"
            v-for="line in props.memory">
         <div class="memory-row">
@@ -32,6 +40,9 @@
     loaded: {
       type: Boolean,
       default: true
+    },
+    errors: {
+      type: Array
     }
   });
 
@@ -43,6 +54,11 @@
 </script>
 
 <style scoped>
+.error-message + .error-message {
+  margin-top: 5px;
+  margin-left: 15px;
+}
+
 .memory-contents {
   font-size: 0.9rem;
   height: 100%;
