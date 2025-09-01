@@ -35,9 +35,12 @@
   import MemoryView from './components/MemoryView.vue';
 
   import { Assembler, AssemblingError } from "./assembler.js";
+  import { Emulator } from "./emulator";
 
   const asm = new Assembler(__Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
+
+  const cpu = new Emulator(__Z80E_WASM_FILE__);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
@@ -97,6 +100,8 @@
     await asm.init();
     program.value = asm.getBlank();
     memoryLoaded.value = true;
+
+    await cpu.init();
     resourcesLoaded.value = true;
   });
 </script>
