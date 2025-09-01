@@ -44,8 +44,20 @@
     codeLinesEl.value.scrollTop = codeAreaEl.value.scrollTop;
   }
 
+  function codeAreaKeydownEventListener(ev) {
+    const tabStr = "    ";
+    if (ev.key == "Tab") {
+      ev.preventDefault();
+      const start = this.selectionStart, end = this.selectionEnd;
+      this.value = this.value.substring(0, start) + tabStr +
+        this.value.substring(end)
+      this.selectionStart = this.selectionEnd = start + tabStr.length;
+    }
+  }
+
   onMounted(() => {
     codeLinesEl.value.style.maxHeight = `${codeAreaEl.value.offsetHeight}px`;
+    codeAreaEl.value.addEventListener("keydown", codeAreaKeydownEventListener);
   });
 </script>
 
