@@ -31,3 +31,9 @@ Miscellaneous:
     0eaa  10 20 30
     0ead  01 2c 5a 00  ...
     0eXX  40 50 60 70
+
+- When the horizontal scroll bar appears in the textarea, it essentially
+  shrinks the textarea's height, but the lines bar height stays the same.
+  They go out of alignment.
+
+- I should check memory leaks.
