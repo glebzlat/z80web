@@ -19,7 +19,7 @@
       </Window>
       <Window class="cpu-window" header="CPU">
         <template #main>
-          <div>Nothing yet</div>
+          <div v-if="resourcesLoaded">{{ cpu.getRegister("a") }}</div>
         </template>
       </Window>
     </div>
