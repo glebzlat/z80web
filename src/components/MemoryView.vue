@@ -4,9 +4,9 @@
       <p class="error-message">
         Program cannot be assembled due to following errors:
       </p>
-      <p v-for="error in props.errors" class="error-message">
+      <div v-for="error in props.errors" class="error-message">
         <pre>{{ error.message }}</pre>
-      </p>
+      </div>
     </div>
     <div v-else-if="props.loaded">
       <div class="memory-block"
