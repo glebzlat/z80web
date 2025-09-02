@@ -17,10 +17,7 @@ export class MemoryBlock {
     this.bufStart = bufStart;
     this.bufEnd = bufEnd;
     this.mem = mem;
-  }
-
-  get bytes() {
-    return this.mem.buf.slice(this.bufStart, this.bufEnd);
+    this.bytes = this.mem.buf.subarray(this.bufStart, this.bufEnd);
   }
 
   get addr() {
