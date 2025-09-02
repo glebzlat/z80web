@@ -103,8 +103,10 @@
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
+        console.log("Caught AssemblingError:", e.message);
+      } else {
+        throw e;
       }
-      throw e;
     }
   }
 
