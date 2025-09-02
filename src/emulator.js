@@ -1,6 +1,8 @@
 const Status = {
   STATUS_OK: 0,
-  STATUS_ERROR_NO_REGISTER: 1
+  STATUS_ERROR_NO_REGISTER: 1,
+  STATUS_ERROR_DAA_INVALID_VALUE: -1,
+  STATUS_ERROR_INVALID_OPCODE: -2,
 };
 
 export class EmulatorError extends Error {
@@ -8,10 +10,16 @@ export class EmulatorError extends Error {
     super(message);
     this.name = this.constructor.name;
   }
-};
+}
 
 export class Emulator {
-  constructor(moduleFile) {
+  /** Create an Emulator instance
+   *
+   * @param {Memory} mem
+   * @param {string} moduleFile
+   */
+  constructor(mem, moduleFile) {
+    this.mem = mem;
     this.moduleFile = moduleFile;
     this.bufferSize = 2 ** 4;
   }
@@ -20,14 +28,15 @@ export class Emulator {
     /* Dummy functions for now */
     const imports = {
       env: {
-        memread_fn: () => {},
-        memwrite_fn: () => {},
+        memread_fn: (addr, _) => this.mem.buf[addr],
+        memwrite_fn: (addr, b, _) => (this.mem.buf[addr] = b),
         ioread_fn: () => {},
-        iowrite_fn: () => {}
-      }
+        iowrite_fn: () => {},
+      },
     };
 
-    const module = await WebAssembly.compileStreaming(fetch(this.moduleFile));
+    const file = await fetch(this.moduleFile).then(async (resp) => await resp.arrayBuffer());
+    const module = await WebAssembly.compile(file);
     this.instance = await WebAssembly.instantiate(module, imports);
 
     this.bufferAddr = this.instance.exports.allocate(this.bufferSize);
@@ -48,7 +57,7 @@ export class Emulator {
 
     res = this.getRegister16();
     if (this.getStatus() == Status.STATUS_ERROR_NO_REGISTER) {
-      throw new EmulatorError(`no such register ${r}`)
+      throw new EmulatorError(`no such register ${r}`);
     }
 
     return res;
@@ -73,6 +82,21 @@ export class Emulator {
     }
   }
 
+  executeInstruction() {
+    this.instance.exports.execute_instruction();
+    switch (this.getStatus()) {
+      case Status.STATUS_ERROR_DAA_INVALID_VALUE:
+        throw this.createError("invalid DAA value");
+      case Status.STATUS_ERROR_INVALID_OPCODE:
+        throw this.createError("invalid opcode");
+    }
+  }
+
+  createError(message) {
+    const pc = this.getRegister("pc");
+    return new EmulatorError(`At ${pc.toString(16)}: ${message}`);
+  }
+
   /** Put the string into the WebAssembly module's memory
    *
    * @param {string} s
@@ -80,7 +104,7 @@ export class Emulator {
   putString(s) {
     console.assert(s.length < this.bufferSize - 1);
 
-    const utf8Str = (new TextEncoder()).encode(s + "\0");
+    const utf8Str = new TextEncoder().encode(s + "\0");
     const dest = new Uint8Array(this.instance.exports.memory.buffer, this.bufferAddr);
     dest.set(utf8Str);
     console.log(this.instance.exports.memory.buffer, this.bufferAddr);

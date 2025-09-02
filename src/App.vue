@@ -18,6 +18,11 @@
         </template>
       </Window>
       <Window class="cpu-window" header="CPU">
+        <template #top-panel>
+          <Button @click="step" :active="assembled">
+            Step
+          </Button>
+        </template>
         <template #main>
           <div v-if="resourcesLoaded">{{ cpu.getRegister("a") }}</div>
         </template>
@@ -42,10 +47,11 @@
   const asm = new Assembler(mem.value, __Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
 
-  const cpu = new Emulator(__Z80E_WASM_FILE__);
+  const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
+  const assembled = ref(false);
   const assemblyErrors = ref([]);
 
   const memoryContents = computed(() => {
@@ -91,10 +97,12 @@
 
   async function onAssemble() {
     memoryLoaded.value = false;
+    assembled.value = false;
     assemblyErrors.value.length = 0;
     try {
       await asm.assemble(sourceCode.value);
       memoryLoaded.value = true;
+      assembled.value = true;
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
@@ -103,6 +111,10 @@
         throw e;
       }
     }
+  }
+
+  function step() {
+    cpu.executeInstruction();
   }
 
   onMounted(async () => {
