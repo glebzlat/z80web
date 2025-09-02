@@ -78,11 +78,6 @@
         rows.push({ addr: prevAddress, bytes });
       }
 
-      if (!rows.length) {
-        /* It's a crutch. There must be no empty rows. */
-        continue;
-      }
-
       blocks.push({
         line: block.line,
         lineNo: block.lineNo,

@@ -83,7 +83,9 @@ export class Memory {
   }
 
   addBlockToSize() {
-    this.addBlock(null, null, this.size, new Array(this.size - this.bufPtr));
+    if (this.size - this.bufPtr) {
+      this.addBlock(null, null, this.size, new Array(this.size - this.bufPtr));
+    }
   }
 
   clear() {
