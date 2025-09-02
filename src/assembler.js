@@ -1,3 +1,5 @@
+import { Memory } from "./memory";
+
 class StdinHandler {
   /** Create an StdinHandler object
    *
@@ -10,22 +12,6 @@ class StdinHandler {
 
   stdin() {
     return this.lines[this.idx++];
-  }
-}
-
-export class EncodedBlock {
-  /** Create an EncodedBlock object
-   *
-   * @param {number} lineNo
-   * @param {str} line
-   * @param {number} addr
-   * @param {Array<number>} bytes
-   */
-  constructor(lineNo, line, addr, bytes) {
-    this.lineNo = lineNo;
-    this.line = line;
-    this.addr = addr;
-    this.bytes = bytes;
   }
 }
 
@@ -43,10 +29,12 @@ export class AssemblingError extends Error {
 export class Assembler {
   /** Create an Assembler object
    *
+   * @param {Memory} mem
    * @param {string} z80asmFile
    * @param {string} scriptFile
    */
-  constructor(z80asmFile, scriptFile) {
+  constructor(mem, z80asmFile, scriptFile) {
+    this.mem = mem;
     this.z80asmFile = z80asmFile;
     this.scriptFile = scriptFile;
     this.programLength = 2 ** 16;
@@ -73,40 +61,20 @@ export class Assembler {
   /** Assemble the code and return a 64K memory space
    *
    * @param {string} sourceCode
-   * @returns {Promise<Array<EncodedBlock>>}
    * @throws {AssemblingError}
    */
   async assemble(sourceCode) {
-    const program = await Array.fromAsync(this.getProgram(sourceCode));
-
-    if (!program.length) {
-      return this.getBlank();
-    }
-
-    const lastEl = program[program.length - 1];
-    const filler = Array(this.programLength - lastEl.addr).fill(0x00);
-    program.push(new EncodedBlock(null, null, lastEl.addr, filler));
-
-    console.log(program);
-    return program;
-  }
-
-  /** Create an empty memory space
-   *
-   * @returns {Array<EncodedBlock>}
-   */
-  getBlank() {
-    const arr = Array(this.programLength).fill(0x00);
-    return [new EncodedBlock(null, null, 0, arr)];
+    this.mem.clear();
+    await this.getProgram(sourceCode);
+    this.mem.addBlockToSize();
   }
 
   /** Assemble the code and yield encoded blocks
    *
    * @param {string} sourceCode
-   * @yields {EncodedBlock}
    * @throws {AssemblingError}
    */
-  async *getProgram(sourceCode) {
+  async getProgram(sourceCode) {
     this.pyodide.setStdin(new StdinHandler(sourceCode.split("\n")));
 
     const readLines = new Array();
@@ -127,8 +95,8 @@ export class Assembler {
 
     for (const line of readLines) {
       const block = JSON.parse(line);
-      const [lineNo, lineStr, addr, bytes] = block;
-      yield new EncodedBlock(lineNo, lineStr, addr, bytes);
+      const [lineNo, lineStr, endAddr, bytes] = block;
+      this.mem.addBlock(lineNo, lineStr, endAddr, bytes);
     }
   }
 

@@ -34,24 +34,29 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
 
+  import { Memory } from "./memory.js";
   import { Assembler, AssemblingError } from "./assembler.js";
   import { Emulator } from "./emulator";
 
-  const asm = new Assembler(__Z80ASM_FILE__, __SCRIPT_FILE__);
+  const mem = ref(Memory.createEmpty(2 ** 12));
+  const asm = new Assembler(mem.value, __Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
 
   const cpu = new Emulator(__Z80E_WASM_FILE__);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
-  const program = ref([]);
   const assemblyErrors = ref([]);
 
   const memoryContents = computed(() => {
     const blocks = [];
 
+    if (!mem.value) {
+      return blocks;
+    }
+
     let address = 0;
-    for (let block of program.value) {
+    for (let block of mem.value.blocks) {
       if (block.bytes === null) {
         continue;
       }
@@ -73,6 +78,11 @@
         rows.push({ addr: prevAddress, bytes });
       }
 
+      if (!rows.length) {
+        /* It's a crutch. There must be no empty rows. */
+        continue;
+      }
+
       blocks.push({
         line: block.line,
         lineNo: block.lineNo,
@@ -80,6 +90,7 @@
       });
     }
 
+    console.log("blocks", blocks);
     return blocks;
   });
 
@@ -87,18 +98,18 @@
     memoryLoaded.value = false;
     assemblyErrors.value.length = 0;
     try {
-      program.value = await asm.assemble(sourceCode.value);
+      await asm.assemble(sourceCode.value);
       memoryLoaded.value = true;
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
       }
+      throw e;
     }
   }
 
   onMounted(async () => {
     await asm.init();
-    program.value = asm.getBlank();
     memoryLoaded.value = true;
 
     await cpu.init();
