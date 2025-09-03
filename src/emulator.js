@@ -22,15 +22,16 @@ export class Emulator {
     this.mem = mem;
     this.moduleFile = moduleFile;
     this.bufferSize = 2 ** 4;
+    this.changedAddresses = new Set();
   }
 
   async init() {
     const imports = {
       env: {
-        memread_fn: (addr, _) => this.mem.buf[addr],
-        memwrite_fn: (addr, b, _) => (this.mem.buf[addr] = b),
-        ioread_fn: () => {},
-        iowrite_fn: () => {},
+        memread_fn: this.memread.bind(this),
+        memwrite_fn: this.memwrite.bind(this),
+        ioread_fn: () => this.ioread.bind(this),
+        iowrite_fn: () => this.iowrite.bind(this),
       },
     };
 
@@ -40,6 +41,31 @@ export class Emulator {
 
     this.bufferAddr = this.instance.exports.allocate(this.bufferSize);
     this.instance.exports.init();
+  }
+
+  memread(addr, _) {
+    const val = this.mem.buf[addr];
+    console.log(`read at ${this.hex(addr, 4)}: ${this.hex(val, 2)}`);
+    return val;
+  }
+
+  memwrite(addr, b, _) {
+    console.log(`write at ${this.hex(addr, 4)}: ${this.hex(b, 2)}`);
+    this.mem.buf[addr] = b;
+    this.changedAddresses.add(addr);
+  }
+
+  ioread(port, b, _) {
+    console.log(`IO read at port ${this.hex(port, 4)}`);
+    return 0;
+  }
+
+  iowrite(port, b, _) {
+    console.log(`IO write at port ${this.hex(port, 4)}`);
+  }
+
+  hex(n, len) {
+    return n.toString(16).padStart(len, "0");
   }
 
   /** Get the value of the register
