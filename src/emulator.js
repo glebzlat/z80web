@@ -25,7 +25,6 @@ export class Emulator {
   }
 
   async init() {
-    /* Dummy functions for now */
     const imports = {
       env: {
         memread_fn: (addr, _) => this.mem.buf[addr],
@@ -40,6 +39,7 @@ export class Emulator {
     this.instance = await WebAssembly.instantiate(module, imports);
 
     this.bufferAddr = this.instance.exports.allocate(this.bufferSize);
+    this.instance.exports.init();
   }
 
   /** Get the value of the register
@@ -107,7 +107,6 @@ export class Emulator {
     const utf8Str = new TextEncoder().encode(s + "\0");
     const dest = new Uint8Array(this.instance.exports.memory.buffer, this.bufferAddr);
     dest.set(utf8Str);
-    console.log(this.instance.exports.memory.buffer, this.bufferAddr);
   }
 
   getRegister8() {

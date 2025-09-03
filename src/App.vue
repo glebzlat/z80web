@@ -43,7 +43,7 @@
   import { Assembler, AssemblingError } from "./assembler.js";
   import { Emulator } from "./emulator";
 
-  const mem = ref(Memory.createEmpty(2 ** 12));
+  const mem = ref(Memory.createEmpty(2 ** 13));
   const asm = new Assembler(mem.value, __Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
 
@@ -91,7 +91,6 @@
       });
     }
 
-    console.log("blocks", blocks);
     return blocks;
   });
 
@@ -115,6 +114,7 @@
 
   function step() {
     cpu.executeInstruction();
+    console.log("pc", cpu.getRegister("pc"));
   }
 
   onMounted(async () => {
