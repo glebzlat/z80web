@@ -13,15 +13,22 @@
       </Window>
       <Window class="mem-window" header="Mem">
         <template #main>
-          <MemoryView :memory="memoryContents" :loaded="memoryLoaded"
+          <MemoryView :memory="mem"
+                      :programCounter="programCounter"
+                      :loaded="memoryLoaded"
                       :errors="assemblyErrors" />
         </template>
       </Window>
       <Window class="cpu-window" header="CPU">
         <template #top-panel>
-          <Button @click="step" :active="assembled">
-            Step
-          </Button>
+          <div class="cpu-top-panel">
+            <Button @click="step" :active="assembled">
+              Step
+            </Button>
+            <Button @click="reset" :active="assembled">
+              Reset
+            </Button>
+          </div>
         </template>
         <template #main>
           <div v-if="resourcesLoaded">{{ cpu.getRegister("a") }}</div>
@@ -32,7 +39,7 @@
 </template>
 
 <script setup>
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, onMounted } from 'vue';
 
   import Window from './components/Window.vue';
   import Button from './components/Button.vue';
@@ -48,51 +55,12 @@
   const sourceCode = ref("");
 
   const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
+  const programCounter = ref(0);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
   const assembled = ref(false);
   const assemblyErrors = ref([]);
-
-  const memoryContents = computed(() => {
-    const blocks = [];
-
-    if (!mem.value) {
-      return blocks;
-    }
-
-    let address = 0;
-    for (let block of mem.value.blocks) {
-      if (block.bytes === null) {
-        continue;
-      }
-
-      const rows = [], bytes = [];
-      let prevAddress = address;
-
-      for (let b of block.bytes) {
-        bytes.push(b);
-        ++address;
-        if (bytes.length == 4) {
-          rows.push({ addr: prevAddress, bytes: [...bytes] });
-          prevAddress = address;
-          bytes.length = 0;
-        }
-      }
-
-      if (bytes.length) {
-        rows.push({ addr: prevAddress, bytes });
-      }
-
-      blocks.push({
-        line: block.line,
-        lineNo: block.lineNo,
-        rows: rows
-      });
-    }
-
-    return blocks;
-  });
 
   async function onAssemble() {
     memoryLoaded.value = false;
@@ -114,7 +82,13 @@
 
   function step() {
     cpu.executeInstruction();
-    console.log("pc", cpu.getRegister("pc"));
+    programCounter.value = cpu.getRegister("pc");
+    console.log("pc", programCounter.value);
+  }
+
+  function reset() {
+    cpu.reset();
+    programCounter.value = 0;
   }
 
   onMounted(async () => {
@@ -151,5 +125,10 @@
 
 .cpu-window {
   grid-area: cpu-window;
+}
+
+.cpu-top-panel {
+  display: flex;
+  gap: 0 10px;
 }
 </style>

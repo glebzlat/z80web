@@ -9,20 +9,14 @@
       </div>
     </div>
     <div v-else-if="props.loaded">
-      <div class="memory-block"
-           v-for="line in props.memory">
-        <div class="memory-row">
-          <span class="memory-addr">{{ intToHex(line.rows[0].addr, 4) }}</span>
-          <span class="memory-cell" v-for="byte in line.rows[0].bytes">
-            {{ intToHex(byte, 2) }}
-          </span>
-        </div>
-        <div class="memory-row" v-for="row in line.rows.slice(1)">
-          <span class="memory-addr">{{ intToHex(row.addr, 4) }}</span>
-          <span class="memory-cell" v-for="byte in row.bytes">
-            {{ intToHex(byte, 2) }}
-          </span>
-        </div>
+      <div class="memory-row" v-for="row, idx in memoryRows">
+        <span class="memory-addr">
+          {{ intToHex(idx * totalBytesInARow, 4) }}
+        </span>
+        <span class="memory-cell" v-for="byte, byteIdx of row"
+              :class="{ 'memory-cell-current': isCurrentCell(idx, byteIdx) }">
+          {{ intToHex(byte, 2) }}
+        </span>
       </div>
     </div>
     <div v-else class="memory-loading">
@@ -32,9 +26,13 @@
 </template>
 
 <script setup>
+  import { computed } from "vue";
+
+  import { Memory } from "@/memory";
+
   const props = defineProps({
     memory: {
-      type: Array,
+      type: Memory,
       required: true
     },
     loaded: {
@@ -43,12 +41,38 @@
     },
     errors: {
       type: Array
+    },
+    programCounter: {
+      type: Number,
+      required: true
     }
   });
+
+  const totalBytesInARow = 4;
+
+  const memoryRows = computed(() => {
+    const rows = [];
+
+    let i = 0, j = 0;
+    for (; i < props.memory.buf.length; ++i) {
+      if (i != 0 && i % totalBytesInARow == 0) {
+        rows.push(props.memory.buf.subarray(j, i));
+        j = i;
+      }
+    }
+
+    rows.push(props.memory.buf.subarray(j, i));
+
+    return rows;
+  })
 
   function intToHex(i, length) {
     const str = i.toString(16);
     return str.padStart(length, "0");
+  }
+
+  function isCurrentCell(rowIdx, byteIdx) {
+    return props.programCounter == rowIdx * totalBytesInARow + byteIdx;
   }
 
 </script>
@@ -74,20 +98,20 @@
 
 .memory-addr {
   padding: 0 10px;
-}
-
-.memory-row-fold {
-  background-color: var(--second-bg-color);
-  cursor: pointer;
+  border-right: solid 1px var(--second-bg-color);
 }
 
 .memory-cell {
   padding: 0 5px;
 }
 
+.memory-cell-current {
+  background-color: var(--main-fg-color);
+  color: var(--main-bg-color);
+}
+
 .memory-addr + .memory-cell {
-  border-left: solid 1px var(--second-bg-color);
-  padding-left: 10px;
+  margin-left: 5px;
 }
 
 .memory-row-fold .memory-addr + .memory-cell {

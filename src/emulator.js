@@ -108,6 +108,10 @@ export class Emulator {
     }
   }
 
+  /** Execute one instruction
+   *
+   * @throws {EmulatorError}
+   */
   executeInstruction() {
     this.instance.exports.execute_instruction();
     switch (this.getStatus()) {
@@ -116,6 +120,17 @@ export class Emulator {
       case Status.STATUS_ERROR_INVALID_OPCODE:
         throw this.createError("invalid opcode");
     }
+  }
+
+  /** Reset the CPU and set zeros to changed memory cells */
+  reset() {
+    this.instance.exports.reset();
+
+    for (let addr of this.changedAddresses.values()) {
+      this.mem.buf[addr] = 0;
+    }
+
+    this.changedAddresses.clear();
   }
 
   createError(message) {
