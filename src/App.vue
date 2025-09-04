@@ -70,6 +70,8 @@
       await asm.assemble(sourceCode.value);
       memoryLoaded.value = true;
       assembled.value = true;
+      cpu.reset();
+      programCounter.value = 0;
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
