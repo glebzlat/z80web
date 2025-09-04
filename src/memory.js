@@ -69,7 +69,7 @@ export class Memory {
   addBlock(lineNo, lineStr, endAddr, bytes) {
     const bufEndPtr = this.bufPtr + bytes.length;
     if (bufEndPtr > this.size) {
-      throw new MemoryError("the length of the buffer exceeds memory limit");
+      throw new MemoryError(`the length of the buffer exceeds memory limit: ${bufEndPtr} > ${this.size}`);
     }
 
     const block = new MemoryBlock(lineNo, lineStr, this.bufPtr, endAddr, this.bufPtr, bufEndPtr, this);
