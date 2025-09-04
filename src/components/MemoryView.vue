@@ -30,6 +30,8 @@
 
   import { Memory } from "@/memory";
 
+  import { intToHex } from "@/common.js";
+
   const props = defineProps({
     memory: {
       type: Memory,
@@ -65,11 +67,6 @@
 
     return rows;
   })
-
-  function intToHex(i, length) {
-    const str = i.toString(16);
-    return str.padStart(length, "0");
-  }
 
   function isCurrentCell(rowIdx, byteIdx) {
     return props.programCounter == rowIdx * totalBytesInARow + byteIdx;

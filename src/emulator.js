@@ -1,3 +1,5 @@
+import { intToHex } from "@/common";
+
 const Status = {
   STATUS_OK: 0,
   STATUS_ERROR_NO_REGISTER: 1,
@@ -45,23 +47,33 @@ export class Emulator {
 
   memread(addr, _) {
     const val = this.mem.buf[addr];
-    console.log(`read at ${this.hex(addr, 4)}: ${this.hex(val, 2)}`);
+    console.log(`read at ${intToHex(addr, 4)}: ${intToHex(val, 2)}`);
     return val;
   }
 
   memwrite(addr, b, _) {
-    console.log(`write at ${this.hex(addr, 4)}: ${this.hex(b, 2)}`);
+    console.log(`write at ${intToHex(addr, 4)}: ${intToHex(b, 2)}`);
     this.mem.buf[addr] = b;
     this.changedAddresses.add(addr);
   }
 
   ioread(port, b, _) {
-    console.log(`IO read at port ${this.hex(port, 4)}`);
+    console.log(`IO read at port ${intToHex(port, 4)}`);
     return 0;
   }
 
   iowrite(port, b, _) {
-    console.log(`IO write at port ${this.hex(port, 4)}`);
+    console.log(`IO write at port ${intToHex(port, 4)}`);
+  }
+  /** Switch to main register set and call the given function
+   *
+   * @param {(e: Emulator) => void} fn
+   */
+  accessMainRegisters(fn) {
+    const tmp = this.registerSet;
+    this.registerSet = RegisterSet.MAIN;
+    fn(this);
+    this.registerSet = tmp;
   }
 
   hex(n, len) {
