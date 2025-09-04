@@ -31,7 +31,9 @@
           </div>
         </template>
         <template #main>
-          <div v-if="resourcesLoaded">{{ cpu.getRegister("a") }}</div>
+          <div v-if="resourcesLoaded">
+            <RegisterView :emulator="cpu" :key="programCounter" />
+          </div>
         </template>
       </Window>
     </div>
@@ -39,12 +41,13 @@
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, useTemplateRef, onMounted } from 'vue';
 
   import Window from './components/Window.vue';
   import Button from './components/Button.vue';
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
+  import RegisterView from './components/RegisterView.vue';
 
   import { Memory } from "./memory.js";
   import { Assembler, AssemblingError } from "./assembler.js";
@@ -61,6 +64,8 @@
   const memoryLoaded = ref(false);
   const assembled = ref(false);
   const assemblyErrors = ref([]);
+
+  const registerView = useTemplateRef("register-view");
 
   async function onAssemble() {
     memoryLoaded.value = false;

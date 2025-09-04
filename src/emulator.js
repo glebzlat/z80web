@@ -14,6 +14,11 @@ export class EmulatorError extends Error {
   }
 }
 
+const RegisterSet = {
+  MAIN: 0,
+  ALT: 1
+};
+
 export class Emulator {
   /** Create an Emulator instance
    *
@@ -25,6 +30,8 @@ export class Emulator {
     this.moduleFile = moduleFile;
     this.bufferSize = 2 ** 4;
     this.changedAddresses = new Set();
+
+    this.registerSet = RegisterSet.MAIN;
   }
 
   async init() {
@@ -65,6 +72,7 @@ export class Emulator {
   iowrite(port, b, _) {
     console.log(`IO write at port ${intToHex(port, 4)}`);
   }
+
   /** Switch to main register set and call the given function
    *
    * @param {(e: Emulator) => void} fn
@@ -76,8 +84,15 @@ export class Emulator {
     this.registerSet = tmp;
   }
 
-  hex(n, len) {
-    return n.toString(16).padStart(len, "0");
+  /** Switch to alt register set and call the given function
+   *
+   * @param {(e: Emulator) => void} fn
+   */
+  accessAltRegisters(fn) {
+    const tmp = this.registerSet;
+    this.registerSet = RegisterSet.ALT;
+    fn(this);
+    this.registerSet = tmp;
   }
 
   /** Get the value of the register
@@ -88,7 +103,7 @@ export class Emulator {
   getRegister(r) {
     this.putString(r);
 
-    let res = this.getRegister8();
+    let res = this.getRegister8(this.registerSet);
     if (this.getStatus() == Status.STATUS_OK) {
       return res;
     }
@@ -109,7 +124,7 @@ export class Emulator {
   setRegister(r, v) {
     this.putString(r);
 
-    this.setRegister8(v);
+    this.setRegister8(v, this.registerSet);
     if (this.getStatus() == Status.STATUS_OK) {
       return;
     }
@@ -162,16 +177,16 @@ export class Emulator {
     dest.set(utf8Str);
   }
 
-  getRegister8() {
-    return this.instance.exports.get_register8(this.bufferAddr);
+  getRegister8(alt) {
+    return this.instance.exports.get_register8(this.bufferAddr, alt);
   }
 
   getRegister16() {
     return this.instance.exports.get_register16(this.bufferAddr);
   }
 
-  setRegister8(v) {
-    this.instance.exports.set_register8(this.bufferAddr, v);
+  setRegister8(v, alt) {
+    this.instance.exports.set_register8(this.bufferAddr, v, alt);
   }
 
   setRegister16(v) {
