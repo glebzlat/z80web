@@ -37,3 +37,5 @@ Miscellaneous:
   They go out of alignment.
 
 - I should check memory leaks.
+
+- Emulator does not throw an error on an invalid instruction.
