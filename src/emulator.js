@@ -1,4 +1,5 @@
 import { intToHex } from "@/common";
+import logger from "@/logger";
 
 const Status = {
   STATUS_OK: 0,
@@ -54,23 +55,23 @@ export class Emulator {
 
   memread(addr, _) {
     const val = this.mem.buf[addr];
-    console.log(`read at ${intToHex(addr, 4)}: ${intToHex(val, 2)}`);
+    logger.message("CPU", `Read at ${intToHex(addr, 4)}: ${intToHex(val, 2)}`);
     return val;
   }
 
   memwrite(addr, b, _) {
-    console.log(`write at ${intToHex(addr, 4)}: ${intToHex(b, 2)}`);
+    logger.message("CPU", `Write at ${intToHex(addr, 4)}: ${intToHex(b, 2)}`);
     this.mem.buf[addr] = b;
     this.changedAddresses.add(addr);
   }
 
   ioread(port, b, _) {
-    console.log(`IO read at port ${intToHex(port, 4)}`);
+    logger.message("CPU", `IO read at port ${intToHex(port, 4)}`);
     return 0;
   }
 
   iowrite(port, b, _) {
-    console.log(`IO write at port ${intToHex(port, 4)}`);
+    logger.message("CPU", `IO write at port ${intToHex(port, 4)}`);
   }
 
   /** Switch to main register set and call the given function
@@ -147,6 +148,11 @@ export class Emulator {
       case Status.STATUS_ERROR_INVALID_OPCODE:
         throw this.createError("invalid opcode");
     }
+    /* XXX:
+     * if (this.instance.exports.halted()) {
+     *   logger.message("CPU", "halt");
+     * }
+     */
   }
 
   /** Reset the CPU and set zeros to changed memory cells */

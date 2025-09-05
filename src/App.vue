@@ -44,6 +44,11 @@
           </div>
         </template>
       </Window>
+      <Window class="status-window" header="Status">
+        <template #main>
+          <MessageView />
+        </template>
+      </Window>
     </div>
   </main>
 </template>
@@ -56,12 +61,14 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
   import RegisterView from './components/RegisterView.vue';
+  import MessageView from "./components/MessageView.vue";
   import Input from "./components/Input.vue";
 
   import { Memory } from "./memory.js";
   import { Assembler, AssemblingError } from "./assembler.js";
-  import { Emulator } from "./emulator";
+  import { Emulator, EmulatorError } from "./emulator";
   import { intToHex, parseHex } from "./common";
+  import logger from "@/logger"
 
   const memorySize = 2 ** 13;
   const mem = ref(Memory.createEmpty(memorySize));
@@ -102,12 +109,13 @@
     memoryLoaded.value = false;
     assembled.value = false;
     assemblyErrors.value.length = 0;
+    cpu.reset();
+    programCounter.value = 0;
+    logger.reset();
     try {
       await asm.assemble(sourceCode.value);
       memoryLoaded.value = true;
       assembled.value = true;
-      cpu.reset();
-      programCounter.value = 0;
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
@@ -116,12 +124,19 @@
         throw e;
       }
     }
+    console.log("logger.messages", logger.messages.value);
   }
 
   function step() {
-    cpu.executeInstruction();
-    programCounter.value = cpu.getRegister("pc");
-    console.log("pc", programCounter.value);
+    try {
+      cpu.executeInstruction();
+      programCounter.value = cpu.getRegister("pc");
+      console.log("pc", programCounter.value);
+    } catch (e) {
+      if (e instanceof EmulatorError) {
+        logger.message("ERROR", e.message);
+      }
+    }
   }
 
   function reset() {
@@ -134,6 +149,7 @@
     memoryLoaded.value = true;
 
     await cpu.init();
+    logger.reset();
     resourcesLoaded.value = true;
   });
 </script>
@@ -149,7 +165,7 @@
   grid-template-columns: 1fr 1fr;
   grid-template-areas:
     "code-window mem-window"
-    "cpu-window cpu-window"
+    "cpu-window status-window"
   ;
   height: 100%;
 }
