@@ -9,7 +9,7 @@
       </div>
     </div>
     <div v-else-if="props.loaded">
-      <div class="memory-row" v-for="row, idx in memoryRows">
+      <div class="memory-row" v-for="row, idx in memoryRows" ref="memory-row">
         <span class="memory-addr">
           {{ intToHex(idx * totalBytesInARow, 4) }}
         </span>
@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-  import { computed } from "vue";
+  import { computed, useTemplateRef, watch } from "vue";
 
   import { Memory } from "@/memory";
 
@@ -72,6 +72,22 @@
     return props.programCounter == rowIdx * totalBytesInARow + byteIdx;
   }
 
+  const memoryRowElements = useTemplateRef("memory-row");
+
+  function goToAddress(addr) {
+    if (addr === undefined) {
+      return;
+    }
+
+    const rowIdx = Math.floor(addr / totalBytesInARow);
+    const row = memoryRowElements.value[rowIdx];
+    row.scrollIntoView({ block: "center" });
+
+    row.classList.add("highlighted");
+    setTimeout(() => row.classList.remove("highlighted"), 1000);
+  }
+
+  defineExpose({ goToAddress });
 </script>
 
 <style scoped>
@@ -91,6 +107,10 @@
   align-items: center;
   font-size: 1.1rem;
   height: 100%;
+}
+
+.memory-row.highlighted {
+  background-color: var(--second-bg-color);
 }
 
 .memory-addr {

@@ -14,9 +14,17 @@
       <Window class="mem-window" header="Mem">
         <template #main>
           <MemoryView :memory="mem"
+                      ref="memory-view"
                       :programCounter="programCounter"
                       :loaded="memoryLoaded"
                       :errors="assemblyErrors" />
+        </template>
+        <template #bottom-panel>
+          <div class="mem-window-bottom-panel">
+            <Button @click="onGoTo" :active="resourcesLoaded">Go to</Button>
+            <Input v-model="goToAddressStr" :valid="goToAddressValid"
+                   @keyup.enter="onGoTo" />
+          </div>
         </template>
       </Window>
       <Window class="cpu-window" header="CPU">
@@ -48,12 +56,15 @@
   import CodeEditor from './components/CodeEditor.vue';
   import MemoryView from './components/MemoryView.vue';
   import RegisterView from './components/RegisterView.vue';
+  import Input from "./components/Input.vue";
 
   import { Memory } from "./memory.js";
   import { Assembler, AssemblingError } from "./assembler.js";
   import { Emulator } from "./emulator";
+  import { intToHex, parseHex } from "./common";
 
-  const mem = ref(Memory.createEmpty(2 ** 13));
+  const memorySize = 2 ** 13;
+  const mem = ref(Memory.createEmpty(memorySize));
   const asm = new Assembler(mem.value, __Z80ASM_FILE__, __SCRIPT_FILE__);
   const sourceCode = ref("");
 
@@ -65,7 +76,27 @@
   const assembled = ref(false);
   const assemblyErrors = ref([]);
 
+  const memoryView = useTemplateRef("memory-view");
   const registerView = useTemplateRef("register-view");
+
+  const goToAddressStr = ref("0000");
+  const goToAddressValid = ref(true);
+
+  function onGoTo() {
+    if (!resourcesLoaded.value) {
+      return;
+    }
+
+    const value = parseHex(goToAddressStr.value);
+    if (isNaN(value) || value >= memorySize) {
+      goToAddressValid.value = false;
+      return;
+    }
+
+    console.log("go to address", intToHex(value, 4));
+    goToAddressValid.value = true;
+    memoryView.value.goToAddress(value);
+  }
 
   async function onAssemble() {
     memoryLoaded.value = false;
@@ -135,6 +166,11 @@
 }
 
 .cpu-top-panel {
+  display: flex;
+  gap: 0 10px;
+}
+
+.mem-window-bottom-panel {
   display: flex;
   gap: 0 10px;
 }
