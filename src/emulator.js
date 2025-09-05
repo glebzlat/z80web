@@ -162,7 +162,7 @@ export class Emulator {
 
   createError(message) {
     const pc = this.getRegister("pc");
-    return new EmulatorError(`At ${pc.toString(16)}: ${message}`);
+    return new EmulatorError(`At ${intToHex(pc, 4)}: ${message}`);
   }
 
   /** Put the string into the WebAssembly module's memory
