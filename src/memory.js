@@ -1,7 +1,7 @@
 export class MemoryBlock {
   /** Create an annotated memory block
    *
-   * @param {number} lineNo
+   * @param {number?} lineNo
    * @param {str} line
    * @param {number} startAddr
    * @param {number} endAddr
@@ -52,7 +52,7 @@ export class Memory {
    */
   static createEmpty(size) {
     const mem = new Memory(size);
-    const block = new MemoryBlock(0, "", 0, mem.size, 0, mem.size, mem);
+    const block = new MemoryBlock(null, "", 0, mem.size, 0, mem.size, mem);
     mem.blocks.push(block);
     mem.bufPtr = mem.size;
     return mem;

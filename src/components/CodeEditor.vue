@@ -3,21 +3,27 @@
     <div class="code-input">
       <div class="code-lines" ref="code-lines">
         <div class="code-line"
-             v-for="lineNo of codeLineNumbers">
+             v-for="lineNo in nLines">
           {{ lineNo }}
         </div>
       </div>
-      <textarea name="code-input"
-                id="code-input"
-                class="code-input"
-                ref="code-input"
-                :value="modelValue"
-                @input="onCodeAreaInput"
-                @scroll="onCodeAreaScroll"
-                placeholder="; input code here"
-                spellcheck="false"
-                wrap="soft">
-      </textarea>
+      <div class="input-wrapper">
+        <textarea name="code-input"
+                  id="code-input"
+                  class="code-input"
+                  ref="code-input"
+                  :value="modelValue"
+                  @input="onCodeAreaInput"
+                  @scroll="onCodeAreaScroll"
+                  placeholder="; input code here"
+                  spellcheck="false"
+                  wrap="soft">
+        </textarea>
+        <div class="background-lines" ref="background-lines">
+          <div class="background-line" v-for="i in nLines"
+               :class="{ 'highlight': i == props.highlightLine }">&nbsp</div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -27,13 +33,20 @@
 
   const modelValue = defineModel({ type: String, default: "" });
 
+  const props = defineProps({
+    highlightLine: {
+      type: Number,
+    }
+  });
+
   const codeLinesEl = useTemplateRef("code-lines");
   const codeAreaEl = useTemplateRef("code-input")
+  const backgroundEl = useTemplateRef("background-lines");
 
   const emit = defineEmits(["assemble"]);
 
-  const codeLineNumbers = computed(() => {
-    return modelValue.value.split("\n").length
+  const nLines = computed(() => {
+    return modelValue.value.split("\n").length;
   });
 
   function onCodeAreaInput(event) {
@@ -42,6 +55,7 @@
 
   function onCodeAreaScroll() {
     codeLinesEl.value.scrollTop = codeAreaEl.value.scrollTop;
+    backgroundEl.value.scrollTop = codeAreaEl.value.scrollTop;
   }
 
   function codeAreaKeydownEventListener(ev) {
@@ -69,11 +83,43 @@
   font-size: 0.8rem;
 }
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
 .code-input {
+  position: relative;
+  z-index: 1;
   flex-grow: 1;
   display: flex;
   overflow-y: auto;
   gap: 5px;
+  margin: 0;
+  border-radius: 0;
+}
+
+.background-lines {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  user-select: none;
+  overflow: auto;
+}
+
+.background-line {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: var(--main-bg-color);
+}
+
+.background-line.highlight {
+  background-color: var(--second-bg-color);
 }
 
 .code-lines {

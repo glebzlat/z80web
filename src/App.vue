@@ -3,7 +3,7 @@
     <div class="wrapper">
       <Window class="code-window" header="Code">
         <template #main>
-          <CodeEditor v-model="sourceCode" />
+          <CodeEditor v-model="sourceCode" :highlightLine="highlightCodeLine" />
         </template>
         <template #bottom-panel>
           <Button @click="onAssemble" :active="resourcesLoaded">
@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-  import { ref, useTemplateRef, onMounted } from 'vue';
+  import { ref, useTemplateRef, onMounted, computed } from 'vue';
 
   import Window from './components/Window.vue';
   import Button from './components/Button.vue';
@@ -89,6 +89,21 @@
   const goToAddressStr = ref("0000");
   const goToAddressValid = ref(true);
 
+  const highlightCodeLine = ref(null);
+
+  const addrToLineNoMap = computed(() => {
+    const map = new Map();
+    for (const block of mem.value.blocks) {
+      if (block.lineNo === null) {
+        continue;
+      }
+      for (let addr = block.startAddr; addr < block.endAddr; ++addr) {
+        map.set(addr, block.lineNo);
+      }
+    }
+    return map;
+  });
+
   function onGoTo() {
     if (!resourcesLoaded.value) {
       return;
@@ -109,9 +124,7 @@
     memoryLoaded.value = false;
     assembled.value = false;
     assemblyErrors.value.length = 0;
-    cpu.reset();
-    programCounter.value = 0;
-    logger.reset();
+    reset();
     try {
       await asm.assemble(sourceCode.value);
       memoryLoaded.value = true;
@@ -132,6 +145,8 @@
       cpu.executeInstruction();
       programCounter.value = cpu.getRegister("pc");
       console.log("pc", programCounter.value);
+      highlightCodeLine.value = addrToLineNoMap.value.get(programCounter.value);
+      console.log("highlightCodeLine", highlightCodeLine.value);
     } catch (e) {
       if (e instanceof EmulatorError) {
         logger.message("ERROR", e.message);
@@ -142,6 +157,8 @@
   function reset() {
     cpu.reset();
     programCounter.value = 0;
+    highlightCodeLine.value = null;
+    logger.reset();
   }
 
   onMounted(async () => {
