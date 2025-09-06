@@ -32,7 +32,7 @@
       <Window class="cpu-window" header="CPU">
         <template #top-panel>
           <div class="cpu-top-panel">
-            <Button @click="step" :active="assembled">
+            <Button @click="step" :active="assembled && allowExecution">
               Step
             </Button>
             <Button @click="reset" :active="assembled">
@@ -80,6 +80,7 @@
   const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
   const programCounter = ref(0);
   const lastWriteAddr = ref(null);
+  const allowExecution = ref(true);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
@@ -153,8 +154,10 @@
       programCounter.value = cpu.getRegister("pc");
       highlightCodeLine.value = addrToLineNoMap.value.get(programCounter.value);
       lastWriteAddr.value = cpu.lastWriteAddr;
+      allowExecution.value = !cpu.isHalted();
     } catch (e) {
       if (e instanceof EmulatorError) {
+        allowExecution.value = false;
         logger.message("ERROR", e.message);
       }
     }
@@ -162,6 +165,7 @@
 
   function reset() {
     cpu.reset();
+    allowExecution.value = true;
     programCounter.value = 0;
     highlightCodeLine.value = null;
     logger.reset();

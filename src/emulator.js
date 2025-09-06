@@ -143,6 +143,10 @@ export class Emulator {
    * @throws {EmulatorError}
    */
   executeInstruction() {
+    if (this.isHalted()) {
+      return;
+    }
+
     this.instance.exports.execute_instruction();
     switch (this.getStatus()) {
       case Status.STATUS_ERROR_DAA_INVALID_VALUE:
@@ -150,11 +154,10 @@ export class Emulator {
       case Status.STATUS_ERROR_INVALID_OPCODE:
         throw this.createError("invalid opcode");
     }
-    /* XXX:
-     * if (this.instance.exports.halted()) {
-     *   logger.message("CPU", "halt");
-     * }
-     */
+
+    if (this.isHalted()) {
+      logger.message("CPU", "Halt");
+    }
   }
 
   /** Reset the CPU and set zeros to changed memory cells */
@@ -208,5 +211,13 @@ export class Emulator {
    */
   getStatus() {
     return this.instance.exports.get_status();
+  }
+
+  /** Get whether the CPU is halted
+   *
+   * @returns {boolean}
+   */
+  isHalted() {
+    return this.instance.exports.is_halted() == 1;
   }
 }
