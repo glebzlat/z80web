@@ -79,6 +79,7 @@
 
   const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
   const programCounter = ref(0);
+  const lastWriteAddr = ref(null);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
@@ -146,9 +147,8 @@
     try {
       cpu.executeInstruction();
       programCounter.value = cpu.getRegister("pc");
-      console.log("pc", programCounter.value);
       highlightCodeLine.value = addrToLineNoMap.value.get(programCounter.value);
-      console.log("highlightCodeLine", highlightCodeLine.value);
+      lastWriteAddr.value = cpu.lastWriteAddr;
     } catch (e) {
       if (e instanceof EmulatorError) {
         logger.message("ERROR", e.message);

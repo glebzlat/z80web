@@ -14,6 +14,7 @@
           {{ intToHex(idx * totalBytesInARow, 4) }}
         </span>
         <span class="memory-cell" v-for="byte, byteIdx of row"
+              key="byteIdx" ref="memory-cell"
               :class="{ 'memory-cell-current': isCurrentCell(idx, byteIdx) }">
           {{ intToHex(byte, 2) }}
         </span>
@@ -47,6 +48,9 @@
     programCounter: {
       type: Number,
       required: true
+    },
+    lastWriteAddr: {
+      type: Number
     }
   });
 
@@ -73,6 +77,7 @@
   }
 
   const memoryRowElements = useTemplateRef("memory-row");
+  const memoryCellElements = useTemplateRef("memory-cell");
 
   function goToAddress(addr) {
     if (addr === undefined) {
@@ -88,6 +93,18 @@
   }
 
   defineExpose({ goToAddress });
+
+  watch(() => props.lastWriteAddr, (addr) => {
+    if (addr === undefined || addr === null) {
+      return;
+    }
+    const el = memoryCellElements.value[addr];
+    if (el === undefined) {
+      return;
+    }
+    el.classList.add("highlight-altered");
+    setTimeout(() => el.classList.remove("highlight-altered"), 1000);
+  });
 </script>
 
 <style scoped>
@@ -120,6 +137,10 @@
 
 .memory-cell {
   padding: 0 5px;
+}
+
+.memory-cell.highlight-altered {
+  background-color: var(--second-bg-color);
 }
 
 .memory-cell-current {

@@ -31,6 +31,7 @@ export class Emulator {
     this.moduleFile = moduleFile;
     this.bufferSize = 2 ** 4;
     this.changedAddresses = new Set();
+    this.lastWriteAddr = null;
 
     this.registerSet = RegisterSet.MAIN;
   }
@@ -63,6 +64,7 @@ export class Emulator {
     logger.message("CPU", `Write at ${intToHex(addr, 4)}: ${intToHex(b, 2)}`);
     this.mem.buf[addr] = b;
     this.changedAddresses.add(addr);
+    this.lastWriteAddr = addr;
   }
 
   ioread(port, b, _) {
@@ -164,6 +166,7 @@ export class Emulator {
     }
 
     this.changedAddresses.clear();
+    this.lastWriteAddr = null;
   }
 
   createError(message) {
