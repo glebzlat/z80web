@@ -1,3 +1,4 @@
+import logger from "./logger";
 import { Memory } from "./memory";
 
 export class AssemblingError extends Error {
@@ -85,6 +86,14 @@ export class Assembler {
     });
 
     await promise;
+
+    const bytesEmitted = this.mem.bufPtr;
+    const occupiedMemPercent = Math.round(100 * (bytesEmitted / this.mem.size));
+    logger.message(
+      "ASM",
+      `Produced ${bytesEmitted} bytes of ${this.mem.size} (${occupiedMemPercent}%)`,
+    );
+
     this.mem.addBlockToSize();
   }
 }

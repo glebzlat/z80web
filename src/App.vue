@@ -135,7 +135,11 @@
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
-        console.log("Caught AssemblingError:", e.message);
+        logger.message(
+          "ERROR",
+          "Assembling aborted:\n",
+          e.message
+        );
       } else {
         throw e;
       }
@@ -161,15 +165,29 @@
     programCounter.value = 0;
     highlightCodeLine.value = null;
     logger.reset();
+    printHeader();
+  }
+
+  function printHeader() {
+    logger.message(null, "=== Z80 CPU Emulator ===");
   }
 
   onMounted(async () => {
+    const startTimeMs = Date.now();
+
     await asm.init();
     memoryLoaded.value = true;
 
     await cpu.init();
     logger.reset();
     resourcesLoaded.value = true;
+
+    printHeader();
+    const elapsedTimeSec = (Date.now() - startTimeMs) / 1000;
+    logger.message(
+      null,
+      `Resources loaded in ${elapsedTimeSec.toFixed(2)}s`
+    );
   });
 </script>
 
