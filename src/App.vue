@@ -16,13 +16,15 @@
           <MemoryView :memory="mem"
                       ref="memory-view"
                       :programCounter="programCounter"
+                      :lastWriteAddr="lastWriteAddr"
                       :loaded="memoryLoaded"
                       :errors="assemblyErrors" />
         </template>
         <template #bottom-panel>
           <div class="mem-window-bottom-panel">
             <Button @click="onGoTo" :active="resourcesLoaded">Go to</Button>
-            <Input v-model="goToAddressStr" :valid="goToAddressValid"
+            <Input class="addr-input"
+                   v-model="goToAddressStr" :valid="goToAddressValid"
                    @keyup.enter="onGoTo" />
           </div>
         </template>
@@ -206,5 +208,9 @@
 .mem-window-bottom-panel {
   display: flex;
   gap: 0 10px;
+}
+
+.addr-input {
+  font-size: 0.9rem;
 }
 </style>
