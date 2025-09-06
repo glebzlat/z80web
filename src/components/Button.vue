@@ -1,5 +1,5 @@
 <template>
-  <button class="button" :class="{ active: props.active }">
+  <button class="button" :class="{ active: props.active }" @click="onClick">
     <div class="mask" v-if="!props.active"></div>
     <slot></slot>
   </button>
@@ -12,6 +12,14 @@
       default: true
     }
   });
+
+  const emit = defineEmits(["click"]);
+
+  function onClick() {
+    if (props.active) {
+      emit("click");
+    }
+  }
 </script>
 
 <style scoped>
