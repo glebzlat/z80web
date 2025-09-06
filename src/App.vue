@@ -181,13 +181,13 @@
   }
 
   async function run() {
-    const value = Number(nInstructionsRun);
-    if (isNaN(value)) {
+    const value = Number(nInstructionsRun.value);
+    if (isNaN(value) || value == 0) {
       runInputValid.value = false;
       return;
     }
 
-    console.log("run for", value);
+    runInputValid.value = true;
     for (let i = 0; i < value; ++i) {
       step();
       await sleep(200);
