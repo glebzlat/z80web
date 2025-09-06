@@ -3,7 +3,8 @@
     <div class="message" ref="message"
          v-for="msg in logger.messages.value"
          :class="getMessageClass(msg)">
-      [{{ msg.kind }}]: {{ msg.string }}
+      <pre v-if="msg.kind !== null">[{{ msg.kind }}]: {{ msg.string }}</pre>
+      <pre v-else>{{ msg.string }}</pre>
     </div>
   </div>
 </template>
