@@ -193,7 +193,6 @@
     programCounter.value = 0;
     highlightCodeLine.value = null;
     logger.reset();
-    printHeader();
   }
 
   function printHeader() {
@@ -216,6 +215,8 @@
       null,
       `Resources loaded in ${elapsedTimeSec.toFixed(2)}s`
     );
+
+    logger.freeze();
   });
 </script>
 
