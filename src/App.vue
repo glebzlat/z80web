@@ -25,7 +25,8 @@
             <Button @click="onGoTo" :active="resourcesLoaded">Go to</Button>
             <Input class="input"
                    v-model="goToAddressStr" :valid="goToAddressValid"
-                   @keyup.enter="onGoTo" />
+                   @keyup.enter="onGoTo"
+                   @blur="onGoToInputLeave" />
           </div>
         </template>
       </Window>
@@ -132,6 +133,12 @@
     console.log("go to address", intToHex(value, 4));
     goToAddressValid.value = true;
     memoryView.value.goToAddress(value);
+  }
+
+  function onGoToInputLeave() {
+    if (goToAddressValid.value) {
+      goToAddressStr.value = goToAddressStr.value.padStart(4, "0");
+    }
   }
 
   async function onAssemble() {
