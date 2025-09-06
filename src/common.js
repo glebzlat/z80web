@@ -21,3 +21,14 @@ export function parseHex(s) {
 
   return parseInt(s, 16);
 }
+
+/** Sleep for the given amount of time in milliseconds
+ *
+ * @param {number} timeMs
+ */
+export async function sleep(timeMs) {
+  const promise = new Promise((resolve) => {
+    setTimeout(() => resolve(), timeMs);
+  });
+  await promise;
+}

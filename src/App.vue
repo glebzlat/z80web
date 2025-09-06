@@ -23,7 +23,7 @@
         <template #bottom-panel>
           <div class="mem-window-bottom-panel">
             <Button @click="onGoTo" :active="resourcesLoaded">Go to</Button>
-            <Input class="addr-input"
+            <Input class="input"
                    v-model="goToAddressStr" :valid="goToAddressValid"
                    @keyup.enter="onGoTo" />
           </div>
@@ -35,6 +35,13 @@
             <Button @click="step" :active="assembled && allowExecution">
               Step
             </Button>
+            <Button @click="run" :active="assembled && allowExecution">
+              Run
+            </Button>
+            <Input class="input"
+                   v-model="nInstructionsRun"
+                   @keyup.enter="run"
+                   :valid="runInputValid" />
             <Button @click="reset" :active="assembled">
               Reset
             </Button>
@@ -69,7 +76,7 @@
   import { Memory } from "./memory.js";
   import { Assembler, AssemblingError } from "./assembler.js";
   import { Emulator, EmulatorError } from "./emulator";
-  import { intToHex, parseHex } from "./common";
+  import { intToHex, parseHex, sleep } from "./common";
   import logger from "@/logger"
 
   const memorySize = 2 ** 13;
@@ -94,6 +101,9 @@
   const goToAddressValid = ref(true);
 
   const highlightCodeLine = ref(null);
+
+  const nInstructionsRun = ref("16");
+  const runInputValid = ref(true);
 
   const addrToLineNoMap = computed(() => {
     const map = new Map();
@@ -160,6 +170,20 @@
         allowExecution.value = false;
         logger.message("ERROR", e.message);
       }
+    }
+  }
+
+  async function run() {
+    const value = Number(nInstructionsRun);
+    if (isNaN(value)) {
+      runInputValid.value = false;
+      return;
+    }
+
+    console.log("run for", value);
+    for (let i = 0; i < value; ++i) {
+      step();
+      await sleep(200);
     }
   }
 
@@ -232,7 +256,7 @@
   gap: 0 10px;
 }
 
-.addr-input {
+.input {
   font-size: 0.9rem;
 }
 </style>
