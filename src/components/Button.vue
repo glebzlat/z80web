@@ -57,8 +57,8 @@
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    var(--second-bg-color) 2px,
+    transparent 3px,
+    var(--second-bg-color) 1px,
     var(--second-bg-color) 4px
   );
 }
