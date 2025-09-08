@@ -96,6 +96,7 @@
 
 .register-set {
   min-width: 180px;
+  font-size: 0.9rem;
 }
 
 .register-set-header {
