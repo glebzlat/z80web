@@ -133,6 +133,7 @@
     console.log("go to address", intToHex(value, 4));
     goToAddressValid.value = true;
     memoryView.value.goToAddress(value);
+    goToAddressStr.value = goToAddressStr.value.padStart(4, "0");
   }
 
   function onGoToInputLeave() {
