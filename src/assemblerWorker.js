@@ -28,6 +28,9 @@
  * error. The module will send `assembled` message upon completion.
  */
 
+/**
+ * @type { import("pyodide").PyodideAPI }
+ */
 let pyodide = null;
 
 class StdinHandler {
@@ -118,26 +121,49 @@ async function assemble(sourceCode) {
     postMessage({ message: "block", data: block});
   }
 
+  pyodide.setStdin();
+  pyodide.setStdout();
+
   self.postMessage({ message: "assembled" });
 }
 
 /** Post a Z80Error message */
 async function postError() {
-  postMessage({ message: "error", data: await getLastExceptionString() });
+  postMessage({ message: "error", data: await getLastExceptionArgs() });
 }
 
-async function getLastExceptionString() {
-  const str = pyodide.runPythonAsync(`
-    import sys
+/**
+ * @returns {Promise<Array<import("./assembler").ExceptionInfo>>}
+ */
+async function getLastExceptionArgs() {
+  /** @type { import("pyodide/ffi").PyProxy } */
+  let args;
+  try {
+    args = await pyodide.runPythonAsync(`
+      import sys
 
-    str(sys.last_exc)
-  `);
+      print(f"{sys.last_exc.args=}")
+      [{"message": e.args[0], "line": e.line, "column": e.column} for e in sys.last_exc.args]
+    `);
 
-  if (str) {
-    return str;
+    if (!args) {
+      return [];
+    }
+
+    // Pyodide converts Python dict to JS's Map, which cannot be serialized
+    // by `postMessage`.
+    const excMaps = args.toJs();
+    const excObjs = [];
+    for (let m of excMaps) {
+      excObjs.push(Object.fromEntries(m));
+    }
+
+    return excObjs;
+  } finally {
+    if (args) {
+      args.destroy();
+    }
   }
-
-  return "";
 }
 
 self.onmessage = async (e) => {

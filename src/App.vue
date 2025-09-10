@@ -3,7 +3,8 @@
     <div class="wrapper">
       <Window class="code-window" header="Code">
         <template #main>
-          <CodeEditor v-model="sourceCode" :highlightLine="highlightCodeLine" />
+          <CodeEditor v-model="sourceCode" :highlightLine="highlightCodeLine"
+                      :errorLines="errorCodeLines" />
         </template>
         <template #bottom-panel>
           <Button @click="onAssemble" :active="resourcesLoaded">
@@ -17,8 +18,7 @@
                       ref="memory-view"
                       :programCounter="programCounter"
                       :lastWriteAddr="lastWriteAddr"
-                      :loaded="memoryLoaded"
-                      :errors="assemblyErrors" />
+                      :loaded="memoryLoaded" />
         </template>
         <template #bottom-panel>
           <div class="mem-window-bottom-panel">
@@ -102,6 +102,7 @@
   const goToAddressValid = ref(true);
 
   const highlightCodeLine = ref(null);
+  const errorCodeLines = ref(new Set());
 
   const nInstructionsRun = ref("16");
   const runInputValid = ref(true);
@@ -149,21 +150,44 @@
     reset();
     try {
       await asm.assemble(sourceCode.value);
-      memoryLoaded.value = true;
       assembled.value = true;
+      errorCodeLines.value.clear();
     } catch (e) {
       if (e instanceof AssemblingError) {
         assemblyErrors.value.push(e);
         logger.message(
           "ERROR",
           "Assembling aborted:\n",
-          e.message
+          formatExceptions(e)
         );
+        setErrorLines(e);
       } else {
         throw e;
       }
     }
+    memoryLoaded.value = true;
     console.log("logger.messages", logger.messages.value);
+  }
+
+  /**
+   * @param {AssemblingError} e
+   * @returns {string}
+   */
+  function formatExceptions(e) {
+    const strings = [];
+    for (let exc of e.exceptions) {
+      strings.push(exc.message);
+    }
+    return strings.join("\n");
+  }
+
+  /**
+   * @param {AssemblingError} e
+   */
+  function setErrorLines(e) {
+    for (let exc of e.exceptions) {
+      errorCodeLines.value.add(exc.line);
+    }
   }
 
   function step() {

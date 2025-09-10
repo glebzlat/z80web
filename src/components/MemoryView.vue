@@ -1,14 +1,6 @@
 <template>
   <div class="memory-contents">
-    <div v-if="props.errors && props.errors.length" class="error-display">
-      <p class="error-message">
-        Program cannot be assembled due to following errors:
-      </p>
-      <div v-for="error in props.errors" class="error-message">
-        <pre>{{ error.message }}</pre>
-      </div>
-    </div>
-    <div v-else-if="props.loaded">
+    <div v-if="props.loaded">
       <div class="memory-row" v-for="row, idx in memoryRows" ref="memory-row">
         <span class="memory-addr">
           {{ intToHex(idx * totalBytesInARow, 4) }}
@@ -41,9 +33,6 @@
     loaded: {
       type: Boolean,
       default: true
-    },
-    errors: {
-      type: Array
     },
     programCounter: {
       type: Number,
@@ -108,11 +97,6 @@
 </script>
 
 <style scoped>
-.error-message + .error-message {
-  margin-top: 5px;
-  margin-left: 15px;
-}
-
 .memory-contents {
   font-size: 0.9rem;
   height: 100%;

@@ -1,13 +1,18 @@
 import logger from "./logger";
 import { Memory } from "./memory";
 
+/**
+ * @typedef {{message: string, line: number, column: number}} ExceptionInfo
+ */
+
 export class AssemblingError extends Error {
   /** Create an AssemblingError object
    *
-   * @param {string} message
+   * @param {Array<ExceptionInfo>} exceptions
    */
-  constructor(message) {
-    super(message);
+  constructor(exceptions) {
+    super("Assembling error");
+    this.exceptions = exceptions;
     this.name = this.constructor.name;
   }
 }
