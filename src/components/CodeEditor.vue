@@ -21,7 +21,10 @@
         </textarea>
         <div class="background-lines" ref="background-lines">
           <div class="background-line" v-for="i in nLines"
-               :class="{ 'highlight': i == props.highlightLine }">&nbsp</div>
+               :class="{ 'highlight': i == props.highlightLine,
+                         'highlight-error': props.errorLines.has(i) }">
+            &nbsp
+          </div>
         </div>
       </div>
     </div>
@@ -36,6 +39,10 @@
   const props = defineProps({
     highlightLine: {
       type: Number,
+    },
+    errorLines: {
+      type: Set,
+      default: new Set()
     }
   });
 
@@ -120,6 +127,10 @@
 
 .background-line.highlight {
   background-color: var(--second-bg-color);
+}
+
+.background-line.highlight-error {
+  background-color: var(--bg-error-color);
 }
 
 .code-lines {

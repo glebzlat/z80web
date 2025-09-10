@@ -8,6 +8,7 @@
 :root {
   --main-bg-color: #000;
   --second-bg-color: #003300;
+  --bg-error-color: #330000;
   --main-fg-color: #00ff00;
   --main-fg-error-color: #ff0000;
 }
