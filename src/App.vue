@@ -4,12 +4,18 @@
       <Window class="code-window" header="Code">
         <template #main>
           <CodeEditor v-model="sourceCode" :highlightLine="highlightCodeLine"
-                      :errorLines="errorCodeLines" />
+                      :errorLines="errorCodeLines"
+                      :readonly="emulationStarted" />
         </template>
         <template #bottom-panel>
-          <Button @click="onAssemble" :active="resourcesLoaded">
-            Assemble
-          </Button>
+          <div class="button-wrapper">
+            <Button @click="onAssemble" :active="resourcesLoaded">
+              Assemble
+            </Button>
+            <Button @click="onStartStop" :active="assembled">
+              {{ startStopTitle }}
+            </Button>
+          </div>
         </template>
       </Window>
       <Window class="mem-window" header="Mem">
@@ -33,17 +39,17 @@
       <Window class="cpu-window" header="CPU">
         <template #top-panel>
           <div class="cpu-top-panel">
-            <Button @click="step" :active="assembled && allowExecution">
+            <Button @click="step" :active="emulationStarted">
               Step
             </Button>
-            <Button @click="run" :active="assembled && allowExecution">
+            <Button @click="run" :active="emulationStarted">
               Run
             </Button>
             <Input class="input"
                    v-model="nInstructionsRun"
                    @keyup.enter="run"
                    :valid="runInputValid" />
-            <Button @click="reset" :active="assembled">
+            <Button @click="reset" :active="emulationStarted">
               Reset
             </Button>
           </div>
@@ -64,7 +70,7 @@
 </template>
 
 <script setup>
-  import { ref, useTemplateRef, onMounted, computed } from 'vue';
+  import { ref, useTemplateRef, onMounted, computed, watch} from 'vue';
 
   import Window from './components/Window.vue';
   import Button from './components/Button.vue';
@@ -88,15 +94,14 @@
   const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
   const programCounter = ref(0);
   const lastWriteAddr = ref(null);
-  const allowExecution = ref(true);
 
   const resourcesLoaded = ref(false);
   const memoryLoaded = ref(false);
   const assembled = ref(false);
+  const emulationStarted = ref(false);
   const assemblyErrors = ref([]);
 
   const memoryView = useTemplateRef("memory-view");
-  const registerView = useTemplateRef("register-view");
 
   const goToAddressStr = ref("0000");
   const goToAddressValid = ref(true);
@@ -119,6 +124,31 @@
     }
     return map;
   });
+
+  const startStopTitle = computed(() => {
+    if (emulationStarted.value) {
+      return "Stop";
+    } else {
+      return "Start";
+    }
+  })
+
+  function onStartStop() {
+    if (!emulationStarted.value && assembled.value) {
+      emulationStarted.value = true;
+    } else {
+      emulationStarted.value = false;
+    }
+  }
+
+  watch(emulationStarted, (newValue) => {
+    if (newValue) {
+      reset();
+      logger.message("EMU", "Emulation started");
+    } else {
+      logger.message("EMU", "Emulation stopped");
+    }
+  })
 
   function onGoTo() {
     if (!resourcesLoaded.value) {
@@ -196,10 +226,10 @@
       programCounter.value = cpu.getRegister("pc");
       highlightCodeLine.value = addrToLineNoMap.value.get(programCounter.value);
       lastWriteAddr.value = cpu.lastWriteAddr;
-      allowExecution.value = !cpu.isHalted();
+      emulationStarted.value = !cpu.isHalted();
     } catch (e) {
       if (e instanceof EmulatorError) {
-        allowExecution.value = false;
+        emulationStarted.value = false;
         logger.message("ERROR", e.message);
       }
     }
@@ -221,7 +251,6 @@
 
   function reset() {
     cpu.reset();
-    allowExecution.value = true;
     programCounter.value = 0;
     highlightCodeLine.value = null;
     logger.reset();
@@ -291,5 +320,10 @@
 
 .input {
   font-size: 0.9rem;
+}
+
+.button-wrapper {
+  display: flex;
+  gap: 0 10px;
 }
 </style>

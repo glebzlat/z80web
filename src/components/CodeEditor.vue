@@ -17,6 +17,7 @@
                   @scroll="onCodeAreaScroll"
                   placeholder="; input code here"
                   spellcheck="false"
+                  :readonly="props.readonly"
                   wrap="soft">
         </textarea>
         <div class="background-lines" ref="background-lines">
@@ -43,6 +44,10 @@
     errorLines: {
       type: Set,
       default: new Set()
+    },
+    readonly: {
+      type: Boolean,
+      default: false
     }
   });
 
