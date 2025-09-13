@@ -144,8 +144,10 @@
   watch(emulationStarted, (newValue) => {
     if (newValue) {
       reset();
+      highlightCodeLine.value = 1;
       logger.message("EMU", "Emulation started");
     } else {
+      highlightCodeLine.value = null;
       logger.message("EMU", "Emulation stopped");
     }
   })
