@@ -1,35 +1,8 @@
-# cool-interface
+# Z80 Assembler Emulator
 
-This template should help get you started developing with Vue 3 in Vite.
+The project is a Z80 CPU emulator integrated with the Z80 assembler into one
+static web page written in Vue.js.
 
-## Recommended IDE Setup
+## License
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+Licensed under [MIT License](./LICENSE)
