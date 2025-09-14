@@ -1,4 +1,4 @@
-import { intToHex } from "@/common";
+import { intToHex, assetURL } from "@/common";
 import logger from "@/logger";
 
 const Status = {
@@ -27,7 +27,7 @@ export class Emulator {
    */
   constructor(mem) {
     this.mem = mem;
-    this.moduleFile = "assets/z80e.wasm";
+    this.moduleFile = assetURL(__Z80E_WASM_FILE__);
     this.bufferSize = 2 ** 4;
     this.changedAddresses = new Set();
     this.lastWriteAddr = null;

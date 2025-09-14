@@ -29,7 +29,7 @@
  */
 
 import { loadPyodide } from "pyodide";
-import { resolveURL } from "@/common";
+import { assetURL } from "@/common";
 
 /**
  * @type { import("pyodide").PyodideAPI }
@@ -55,8 +55,8 @@ class StdinHandler {
 async function init() {
   pyodide = await loadPyodide();
 
-  const z80asmFileURL = resolveURL(__Z80ASM_FILE__);
-  const scriptFileURL = resolveURL(__SCRIPT_FILE__);
+  const z80asmFileURL = assetURL(__Z80ASM_FILE__);
+  const scriptFileURL = assetURL(__SCRIPT_FILE__);
 
   console.log(`z80asmFileURL=${z80asmFileURL}`);
   console.log(`scriptFileURL=${scriptFileURL}`);

@@ -46,15 +46,31 @@ export function basename(path) {
   return path.substring(lastIdx + 1);
 }
 
-/** Resolve path relative to current module and return an HREF
+/**
+ * @param {...Array<string>} parts
+ * @returns {string}
+ */
+function joinPath(...parts) {
+  parts = parts.map((p) => p.split("/")).flat();
+  console.log("parts", parts);
+
+  const removedEmpty = []
+  parts.forEach((p, i) => {
+    if (p == "" && i != 0) {
+      return;
+    }
+    removedEmpty.push(p);
+  })
+
+  return removedEmpty.join("/");
+}
+
+/** Resolve absolute asset URL
  *
  * @param {string} path
  * @returns {string}
  */
-export function resolveURL(path) {
-  if (import.meta.env.PROD) {
-    return new URL(["/assets", basename(path)].join("/"), import.meta.url).href;
-  }
-  return new URL(path, import.meta.url).href;
+export function assetURL(file) {
+  const absPath = joinPath(import.meta.env.BASE_URL, "assets", file);
+  return new URL(absPath, import.meta.url).href;
 }
-
