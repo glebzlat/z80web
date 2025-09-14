@@ -180,6 +180,7 @@
     assembled.value = false;
     assemblyErrors.value.length = 0;
     reset();
+    logger.reset();
     try {
       await asm.assemble(sourceCode.value);
       assembled.value = true;
@@ -255,7 +256,6 @@
     cpu.reset();
     programCounter.value = 0;
     highlightCodeLine.value = null;
-    logger.reset();
   }
 
   function printHeader() {
