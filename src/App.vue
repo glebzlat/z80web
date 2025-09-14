@@ -72,26 +72,26 @@
 <script setup>
   import { ref, useTemplateRef, onMounted, computed, watch} from 'vue';
 
-  import Window from './components/Window.vue';
-  import Button from './components/Button.vue';
-  import CodeEditor from './components/CodeEditor.vue';
-  import MemoryView from './components/MemoryView.vue';
-  import RegisterView from './components/RegisterView.vue';
-  import MessageView from "./components/MessageView.vue";
-  import Input from "./components/Input.vue";
+  import Window from '@/components/Window.vue';
+  import Button from '@/components/Button.vue';
+  import CodeEditor from '@/components/CodeEditor.vue';
+  import MemoryView from '@/components/MemoryView.vue';
+  import RegisterView from '@/components/RegisterView.vue';
+  import MessageView from "@/components/MessageView.vue";
+  import Input from "@/components/Input.vue";
 
-  import { Memory } from "./memory.js";
-  import { Assembler, AssemblingError } from "./assembler.js";
-  import { Emulator, EmulatorError } from "./emulator";
-  import { intToHex, parseHex, sleep } from "./common";
-  import logger from "@/logger"
+  import { Memory } from "@/memory";
+  import { Assembler, AssemblingError } from "@/assembler";
+  import { Emulator, EmulatorError } from "@/emulator";
+  import { intToHex, parseHex, sleep } from "@/common";
+  import logger from "@/logger";
 
   const memorySize = 2 ** 13;
   const mem = ref(Memory.createEmpty(memorySize));
-  const asm = new Assembler(mem.value, __Z80ASM_FILE__, __SCRIPT_FILE__);
+  const asm = new Assembler(mem.value);
   const sourceCode = ref("");
 
-  const cpu = new Emulator(mem.value, __Z80E_WASM_FILE__);
+  const cpu = new Emulator(mem.value);
   const programCounter = ref(0);
   const lastWriteAddr = ref(null);
 

@@ -32,3 +32,29 @@ export async function sleep(timeMs) {
   });
   await promise;
 }
+
+/** Get the basename of a file path
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+export function basename(path) {
+  const lastIdx = path.lastIndexOf("/");
+  if (lastIdx == -1) {
+    return path;
+  }
+  return path.substring(lastIdx + 1);
+}
+
+/** Resolve path relative to current module and return an HREF
+ *
+ * @param {string} path
+ * @returns {string}
+ */
+export function resolveURL(path) {
+  if (import.meta.env.PROD) {
+    return new URL(["/assets", basename(path)].join("/"), import.meta.url).href;
+  }
+  return new URL(path, import.meta.url).href;
+}
+

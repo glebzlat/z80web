@@ -1,5 +1,6 @@
-import logger from "./logger";
-import { Memory } from "./memory";
+import logger from "@/logger";
+import { Memory } from "@/memory";
+import AssemblerWorker from "@/assemblerWorker?worker";
 
 /**
  * @typedef {{message: string, line: number, column: number}} ExceptionInfo
@@ -21,17 +22,13 @@ export class Assembler {
   /** Create an Assembler object
    *
    * @param {Memory} mem
-   * @param {string} z80asmFile
-   * @param {string} scriptFile
    */
-  constructor(mem, z80asmFile, scriptFile) {
+  constructor(mem) {
     this.mem = mem;
-    this.z80asmFile = z80asmFile;
-    this.scriptFile = scriptFile;
   }
 
   async init() {
-    this.worker = new Worker(__ASSEMBLER_WORKER__, { type: "module" });
+    this.worker = new AssemblerWorker();
 
     const promise = new Promise((resolve, reject) => {
       this.worker.onmessage = (e) => {
@@ -46,11 +43,7 @@ export class Assembler {
         }
       };
 
-      this.worker.postMessage({
-        message: "init",
-        z80asmFile: this.z80asmFile,
-        scriptFile: this.scriptFile,
-      });
+      this.worker.postMessage({ message: "init" });
     });
 
     await promise;

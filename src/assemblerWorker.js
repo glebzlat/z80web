@@ -28,6 +28,9 @@
  * error. The module will send `assembled` message upon completion.
  */
 
+import { loadPyodide } from "pyodide";
+import { resolveURL } from "@/common";
+
 /**
  * @type { import("pyodide").PyodideAPI }
  */
@@ -48,27 +51,12 @@ class StdinHandler {
   }
 }
 
-/** Resolves relative path to the HREF
- *
- * @param {string} path
- * @returns {string}
- */
-function resolveURL(path) {
-  return new URL(path, import.meta.url).href;
-}
-
-/** Initialize Pyodide and the Assembler module
- *
- * @param {string} z80asmFile
- * @param {string} scriptFile
- */
-async function init(z80asmFile, scriptFile) {
-  const { loadPyodide } = await import("pyodide");
-
+/** Initialize Pyodide and the Assembler module */
+async function init() {
   pyodide = await loadPyodide();
 
-  const z80asmFileURL = resolveURL(z80asmFile);
-  const scriptFileURL = resolveURL(scriptFile);
+  const z80asmFileURL = resolveURL(__Z80ASM_FILE__);
+  const scriptFileURL = resolveURL(__SCRIPT_FILE__);
 
   console.log(`z80asmFileURL=${z80asmFileURL}`);
   console.log(`scriptFileURL=${scriptFileURL}`);

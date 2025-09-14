@@ -17,18 +17,17 @@ export class EmulatorError extends Error {
 
 const RegisterSet = {
   MAIN: 0,
-  ALT: 1
+  ALT: 1,
 };
 
 export class Emulator {
   /** Create an Emulator instance
    *
    * @param {Memory} mem
-   * @param {string} moduleFile
    */
-  constructor(mem, moduleFile) {
+  constructor(mem) {
     this.mem = mem;
-    this.moduleFile = moduleFile;
+    this.moduleFile = "assets/z80e.wasm";
     this.bufferSize = 2 ** 4;
     this.changedAddresses = new Set();
     this.lastWriteAddr = null;
