@@ -37,6 +37,10 @@ jobs:
         with:
           node-version: lts/*
           cache: 'npm'
+      - name: Install LLVM
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: '19.1.7'
       - name: Set up Cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
