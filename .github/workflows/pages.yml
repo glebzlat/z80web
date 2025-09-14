@@ -30,13 +30,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          submodules: recursive
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: 'npm'
+      - name: Set up Cmake
+        uses: jwlawson/actions-setup-cmake@v2
+        with:
+          cmake-version: '3.30.x'
       - name: Install dependencies
         run: npm ci
+      - name: Build dependencies
+        run: |
+          cd deps/z80e
+          cmake -S . -B build -DZ80E_WASM=ON
+          cmake --build build
       - name: Build
         run: npm run build -- --base=/${{ github.event.repository.name }}/
       - name: Setup Pages
