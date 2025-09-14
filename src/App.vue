@@ -9,7 +9,8 @@
         </template>
         <template #bottom-panel>
           <div class="button-wrapper">
-            <Button @click="onAssemble" :active="resourcesLoaded">
+            <Button @click="onAssemble"
+                    :active="resourcesLoaded && !emulationStarted">
               Assemble
             </Button>
             <Button @click="onStartStop" :active="assembled">
