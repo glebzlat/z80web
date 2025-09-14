@@ -46,9 +46,9 @@ export default defineConfig({
     viteStaticCopyAssets()
   ],
   define: {
-    __Z80ASM_FILE__: JSON.stringify("assets/z80asm.py"),
-    __SCRIPT_FILE__: JSON.stringify("assets/script.py"),
-    __Z80E_WASM_FILE__: JSON.stringify("assets/z80e.wasm")
+    __Z80ASM_FILE__: JSON.stringify("/assets/z80asm.py"),
+    __SCRIPT_FILE__: JSON.stringify("/assets/script.py"),
+    __Z80E_WASM_FILE__: JSON.stringify("/assets/z80e.wasm")
   },
   resolve: {
     alias: {
