@@ -46,7 +46,7 @@ jobs:
       - name: Build dependencies
         run: |
           cd deps/z80e
-          cmake -S . -B build -DZ80E_WASM=ON
+          cmake -S . -B build -DZ80E_WEBASM=ON
           cmake --build build
       - name: Build
         run: npm run build -- --base=/${{ github.event.repository.name }}/
