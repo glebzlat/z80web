@@ -152,7 +152,7 @@
   height: 100%;
   width: 100%;
   resize: none;
-  white-space: nowrap;
+  white-space: preserve nowrap;
   overflow-x: auto;
   background-color: transparent;
   color: var(--main-fg-color);
